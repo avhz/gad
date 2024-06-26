@@ -1,7 +1,9 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{algebras::core, check::Check, eval::Eval, net, store, value::Value, Graph1, GraphN};
+use crate::{
+    algebras::core, check::Check, eval::Eval, networks::net, store, value::Value, Graph1, GraphN,
+};
 use arrayfire as af;
 
 /// Generic trait for an algebra implementing all known operations over `af::Array<T>` (and `T`) for a

@@ -438,44 +438,9 @@
 //! }
 //! ```
 
-use eval::Eval;
-
 /// Convenient prelude.
 /// For testing and external use only.
-pub mod prelude {
-    pub use crate::{
-        algebras::{
-            analytic::AnalyticAlgebra,
-            arithmetic::ArithAlgebra,
-            array::ArrayAlgebra,
-            array_compare::ArrayCompareAlgebra,
-            compare::CompareAlgebra,
-            const_arith::ConstArithAlgebra,
-            core::{CoreAlgebra, HasDims},
-            linked::LinkedAlgebra,
-            matrix::{MatProp, MatrixAlgebra},
-        },
-        check::Check,
-        config::{Config, Config1, ConfigN},
-        error::{check_equal_dimensions, Error, Result},
-        eval::Eval,
-        func_name,
-        graph::Graph,
-        net::{
-            CheckNet as _, ConstantData, EvalNet as _, HasGradientId, HasGradientReader, InputData,
-            Net, WeightData, WeightOps,
-        },
-        net_ext::{DiffNet as _, SingleOutputNet as _},
-        number::Number,
-        store::{GradientId, GradientReader, GradientStore},
-        value::Value,
-        Graph1, GraphN,
-    };
-    // pub use thiserror::Error as _;
-
-    #[cfg(feature = "arrayfire")]
-    pub use crate::algebras::arrayfire::{testing, AfAlgebra, Float, FullAlgebra};
-}
+pub mod prelude;
 
 /// Config trait.
 pub mod config;
@@ -487,48 +452,14 @@ pub mod error;
 /// Provide algebras supporting higher-order, tape-based auto-differentiation.
 pub mod graph;
 
-pub mod algebras {
-    /// Core operations.
-    pub mod core;
-
-    /// Pointwise analytic functions (cos, sin, log, exp, pow, sqrt, ..)
-    pub mod analytic;
-
-    /// Pointwise arithmetic operations.
-    pub mod arithmetic;
-
-    /// Pointwise arithmetic operations with a constant value.
-    pub mod const_arith;
-
-    /// Pointwise comparison operations.
-    pub mod compare;
-
-    /// Operation to propagate gradients in the case of high-order differentials.
-    pub mod linked;
-
-    /// Array operations.
-    pub mod array;
-
-    /// Array operations with comparisons.
-    pub mod array_compare;
-
-    /// Operations on matrix.
-    pub mod matrix;
-
-    /// Additional definitions for Arrayfire.
-    #[cfg(feature = "arrayfire")]
-    pub mod arrayfire;
-}
+/// Algebras.
+pub mod algebras;
 
 /// Gradient storage for the `graph` module.
 pub mod store;
 
-/// Neural networks.
-pub mod net;
-
-/// Network extensions.
-pub mod net_ext;
-
+/// Networks.
+pub mod networks;
 /// Node.
 pub mod node;
 
@@ -548,10 +479,10 @@ pub mod check;
 pub mod eval;
 
 /// The default algebra that allows computing first-order differentials (aka gradients).
-pub type Graph1 = graph::Graph<config::Config1<Eval>>;
+pub type Graph1 = graph::Graph<config::Config1<eval::Eval>>;
 
 /// The default algebra that allows computing higher-order differentials.
-pub type GraphN = graph::Graph<config::ConfigN<Eval>>;
+pub type GraphN = graph::Graph<config::ConfigN<eval::Eval>>;
 
 #[cfg(test)]
 mod testing {

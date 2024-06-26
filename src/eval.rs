@@ -1,7 +1,7 @@
 /// The default algebra that only computes forward values.
 #[derive(Clone, Default)]
 pub struct Eval {
-    check: crate::check::Check,
+    pub(crate) check: crate::check::Check,
 }
 
 impl Eval {

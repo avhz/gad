@@ -62,6 +62,7 @@ pub trait AnalyticAlgebra<Value> {
 #[cfg(feature = "arrayfire")]
 mod af_arith {
     use super::*;
+    use crate::check::Check;
     use crate::error::check_equal_dimensions;
     use arrayfire as af;
 

@@ -8,7 +8,6 @@ use crate::{
     algebras::compare::CompareAlgebra,
     algebras::core::{CoreAlgebra, HasDims},
     algebras::linked::LinkedAlgebra,
-    check::Check,
     error::Result,
     graph::Graph,
     store::GradientStore,
@@ -27,7 +26,7 @@ pub trait ArrayCompareAlgebra<Value>: CompareAlgebra<Value> + ArrayAlgebra<Value
 #[cfg(feature = "arrayfire")]
 mod af_arith {
     use super::*;
-    use crate::{algebras::analytic::AnalyticAlgebra, error, Check, Eval};
+    use crate::{algebras::analytic::AnalyticAlgebra, check::Check, error, eval::Eval};
     use arrayfire as af;
 
     impl<T> ArrayCompareAlgebra<af::Array<T>> for Eval

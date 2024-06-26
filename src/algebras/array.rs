@@ -51,8 +51,9 @@ mod af_arith {
     use crate::{
         algebras::array::ArrayAlgebra,
         algebras::arrayfire::Float,
+        check::Check,
         error::{check_equal_dimensions, Error, Result},
-        Check, Eval,
+        eval::Eval,
     };
     use arrayfire as af;
 

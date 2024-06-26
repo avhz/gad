@@ -7,7 +7,7 @@ use crate::{
     algebras::core::{CoreAlgebra, HasDims},
     algebras::matrix::MatrixAlgebra,
     error::{check_equal_dimensions, Error, Result},
-    net::{HasGradientId, HasGradientReader, Net, WeightOps},
+    networks::net::{HasGradientId, HasGradientReader, Net, WeightOps},
     number::Number,
     value::Value,
     Graph1,

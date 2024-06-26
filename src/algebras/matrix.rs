@@ -36,7 +36,7 @@ pub trait MatrixAlgebra<Value> {
 #[cfg(feature = "arrayfire")]
 mod af_arith {
     use super::*;
-    use crate::{algebras::arrayfire::Float, check::Check, error::Error, Eval};
+    use crate::{algebras::arrayfire::Float, check::Check, error::Error, eval::Eval};
     use arrayfire as af;
 
     impl<T> MatrixAlgebra<af::Array<T>> for Eval

@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    core::{CoreAlgebra, HasDims},
+    algebras::core::{CoreAlgebra, HasDims},
+    check::Check,
+    config,
     error::{check_equal_dimensions, check_equal_lengths, Error, Result},
+    eval::Eval,
     graph,
     store::GradientReader,
-    Check, Eval,
+    value::Value,
 };
 use serde::{Deserialize, Serialize};
 
@@ -103,7 +106,7 @@ pub trait WeightOps<T>: serde::Serialize + serde::de::DeserializeOwned + Clone +
     fn scale(&self, lambda: T) -> Self;
 }
 
-impl<C: graph::Config> HasGradientReader for graph::Graph<C> {
+impl<C: config::Config> HasGradientReader for graph::Graph<C> {
     type GradientReader = C::GradientStore;
 }
 
@@ -129,7 +132,7 @@ impl<N> EvalNet for N where N: Net<Eval> {}
 pub trait CheckNet: Net<Check> {
     /// Run a forward pass that only checks dimensions.
     fn check(&self, input: Self::Input) -> Result<Self::Output> {
-        self.eval(&mut Check::default(), input)
+        self.eval(&mut Check, input)
     }
 }
 
@@ -180,7 +183,7 @@ mod af_net {
     }
 }
 
-impl<A> HasGradientId for graph::Value<A> {
+impl<A> HasGradientId for Value<A> {
     type GradientId = crate::store::GradientId<A>;
 
     #[inline]
@@ -694,7 +697,7 @@ where
     fn add_assign(&mut self, other: Self) -> Result<()> {
         check_equal_lengths(func_name!(), &[self.len(), other.len()])?;
         self.iter_mut()
-            .zip(other.into_iter())
+            .zip(other)
             .try_for_each(|(x, y)| x.add_assign(y))
     }
 

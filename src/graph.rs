@@ -1,12 +1,15 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::config::{Config, Config1, ConfigN};
 use crate::{
-    core::{CoreAlgebra, HasDims},
+    algebras::core::{CoreAlgebra, HasDims},
     error::{check_equal_dimensions, Error, Result},
+    node::Node,
     store::{
         GenericGradientMap1, GenericGradientMapN, GradientId, GradientStore, GraphArenaBehavior, Id,
     },
+    value::Value,
 };
 use std::{collections::BinaryHeap, sync::Arc};
 
@@ -21,52 +24,15 @@ pub struct Graph<C: Config> {
     eval: C::EvalAlgebra,
 }
 
-/// Configuration trait for `Graph`.
-pub trait Config {
-    /// How to compute forward values.
-    type EvalAlgebra: Default + Clone;
-    /// How to compute gradient values.
-    type GradientAlgebra;
-    /// How to store gradients.
-    type GradientStore;
-}
-
-/// A value tracked in a graph.
-#[derive(Clone, Debug, PartialEq, Default)]
-pub struct Value<D> {
-    /// Forward value.
-    data: D,
-    /// Handle on the computational node, if any.
-    /// * This is also used to index gradients in the gradient store.
-    /// * None for constants.
-    id: Option<GradientId<D>>,
-}
-
-/// A computational node tracked in the graph.
-pub struct Node<C: Config> {
-    /// Track dependencies.
-    inputs: Vec<Option<Id>>,
-    /// Function for updating the gradient of the input variables.
-    update_func: Option<GradientUpdateFunc<C>>,
-}
-
 type GradientUpdateFunc<C> = Arc<
     dyn Fn(
-            /* algebra to for gradient computation */
-            &mut <C as Config>::GradientAlgebra,
-            /* store */ &mut <C as Config>::GradientStore,
-            /* index of output gradient in the store */ Id,
+            &mut <C as Config>::GradientAlgebra, // Algebra to for gradient computation
+            &mut <C as Config>::GradientStore,   // Store to keep track of gradients
+            Id,                                  // Index of the output gradient
         ) -> Result<()>
         + Send
         + Sync,
 >;
-
-impl<C: Config> Node<C> {
-    fn clear(&mut self) {
-        self.inputs.clear();
-        self.update_func = None;
-    }
-}
 
 impl<C: Config> Default for Graph<C> {
     fn default() -> Self {
@@ -246,15 +212,6 @@ impl<C: Config> Graph<C> {
     }
 }
 
-/// Configuration object for first order differentials.
-pub struct Config1<E>(std::marker::PhantomData<E>);
-
-impl<E: Default + Clone> Config for Config1<E> {
-    type EvalAlgebra = E;
-    type GradientAlgebra = E;
-    type GradientStore = GenericGradientMap1;
-}
-
 /// First order only (this is the most common case)
 impl<E: Default + Clone> Graph<Config1<E>> {
     /// Propagate gradients backward, starting with the node `id`.
@@ -290,15 +247,6 @@ impl<E: Default + Clone> Graph<Config1<E>> {
     }
 }
 
-/// Configuration object for higher-order differentials.
-pub struct ConfigN<E>(std::marker::PhantomData<E>);
-
-impl<E: Default + Clone> Config for ConfigN<E> {
-    type EvalAlgebra = E;
-    type GradientAlgebra = Graph<ConfigN<E>>;
-    type GradientStore = GenericGradientMapN;
-}
-
 /// Higher order differentials.
 impl<E: Default + Clone> Graph<ConfigN<E>> {
     /// Propagate gradients backward, starting with the node `id`.
@@ -318,52 +266,12 @@ impl<E: Default + Clone> Graph<ConfigN<E>> {
     }
 }
 
-impl<D> Value<D> {
-    /// Create a constant valid in any graph-based algebra.
-    /// This is safe because constants are not tracked in the graph.
-    pub fn constant(data: D) -> Self {
-        Value { data, id: None }
-    }
-
-    /// The data of a computation node.
-    pub fn data(&self) -> &D {
-        &self.data
-    }
-
-    /// The id of a computation node.
-    pub fn id(&self) -> Option<GradientId<D>> {
-        self.id
-    }
-
-    /// The internal, untyped id of a computation node (used to track dependencies).
-    pub fn input(&self) -> Option<Id> {
-        self.id.map(|id| id.inner)
-    }
-}
-
-impl<C: Config> Clone for Node<C> {
-    fn clone(&self) -> Self {
-        Self {
-            inputs: self.inputs.clone(),
-            update_func: self.update_func.clone(),
-        }
-    }
-}
-
 impl<C: Config> Clone for Graph<C> {
     fn clone(&self) -> Self {
         Self {
             nodes: self.nodes.clone(),
             eval: self.eval.clone(),
         }
-    }
-}
-
-impl<C: Config> std::fmt::Debug for Node<C> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        f.debug_struct("Node")
-            .field("inputs", &self.inputs)
-            .finish()
     }
 }
 

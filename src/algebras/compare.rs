@@ -1,14 +1,18 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::config::{Config1, ConfigN};
+use crate::eval::Eval;
 use crate::{
-    arith::ArithAlgebra,
-    core::{CoreAlgebra, HasDims},
+    algebras::arithmetic::ArithAlgebra,
+    algebras::core::{CoreAlgebra, HasDims},
+    algebras::linked::LinkedAlgebra,
+    check::Check,
     error::Result,
-    graph::{Config1, ConfigN, Graph, Value},
-    linked::LinkedAlgebra,
+    graph::Graph,
+    number::Number,
     store::GradientStore,
-    Check, Eval, Number,
+    value::Value,
 };
 
 /// Element-wise comparison operations.
@@ -68,7 +72,7 @@ pub trait CompareAlgebra<Value> {
 #[cfg(feature = "arrayfire")]
 mod af_arith {
     use super::*;
-    use crate::error::check_equal_dimensions;
+    use crate::{error::check_equal_dimensions, eval::Eval};
     use arrayfire as af;
 
     impl<T> CompareAlgebra<af::Array<T>> for Eval

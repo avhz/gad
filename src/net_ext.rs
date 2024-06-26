@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    arith::ArithAlgebra,
-    array::ArrayAlgebra,
-    core::{CoreAlgebra, HasDims},
+    algebras::arithmetic::ArithAlgebra,
+    algebras::array::ArrayAlgebra,
+    algebras::core::{CoreAlgebra, HasDims},
+    algebras::matrix::MatrixAlgebra,
     error::{check_equal_dimensions, Error, Result},
-    graph::Value,
-    matrix::MatrixAlgebra,
     net::{HasGradientId, HasGradientReader, Net, WeightOps},
-    Graph1, Number,
+    number::Number,
+    value::Value,
+    Graph1,
 };
 use serde::{Deserialize, Serialize};
 

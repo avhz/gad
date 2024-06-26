@@ -1,7 +1,7 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{core, graph, net, store, Check, Eval, Graph1, GraphN};
+use crate::{algebras::core, check::Check, eval::Eval, net, store, value::Value, Graph1, GraphN};
 use arrayfire as af;
 
 /// Generic trait for an algebra implementing all known operations over `af::Array<T>` (and `T`) for a
@@ -10,21 +10,21 @@ pub trait AfAlgebra<T>:
     net::HasGradientReader<GradientReader = <Self as AfAlgebra<T>>::GradientReader>
     + core::CoreAlgebra<af::Array<T>, Value = <Self as AfAlgebra<T>>::Value>
     + core::CoreAlgebra<T, Value = <Self as AfAlgebra<T>>::Scalar>
-    + crate::matrix::MatrixAlgebra<<Self as AfAlgebra<T>>::Value>
-    + crate::array::ArrayAlgebra<
+    + crate::algebras::matrix::MatrixAlgebra<<Self as AfAlgebra<T>>::Value>
+    + crate::algebras::array::ArrayAlgebra<
         <Self as AfAlgebra<T>>::Value,
         Scalar = <Self as AfAlgebra<T>>::Scalar,
-    > + crate::analytic::AnalyticAlgebra<<Self as AfAlgebra<T>>::Value>
-    + crate::analytic::AnalyticAlgebra<<Self as AfAlgebra<T>>::Scalar>
-    + crate::arith::ArithAlgebra<<Self as AfAlgebra<T>>::Value>
-    + crate::arith::ArithAlgebra<<Self as AfAlgebra<T>>::Scalar>
-    + crate::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Value, T>
-    + crate::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Scalar, T>
-    + crate::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Value, i16>
-    + crate::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Scalar, i16>
-    + crate::compare::CompareAlgebra<<Self as AfAlgebra<T>>::Value>
-    + crate::compare::CompareAlgebra<<Self as AfAlgebra<T>>::Scalar>
-    + crate::array_compare::ArrayCompareAlgebra<<Self as AfAlgebra<T>>::Value>
+    > + crate::algebras::analytic::AnalyticAlgebra<<Self as AfAlgebra<T>>::Value>
+    + crate::algebras::analytic::AnalyticAlgebra<<Self as AfAlgebra<T>>::Scalar>
+    + crate::algebras::arithmetic::ArithAlgebra<<Self as AfAlgebra<T>>::Value>
+    + crate::algebras::arithmetic::ArithAlgebra<<Self as AfAlgebra<T>>::Scalar>
+    + crate::algebras::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Value, T>
+    + crate::algebras::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Scalar, T>
+    + crate::algebras::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Value, i16>
+    + crate::algebras::const_arith::ConstArithAlgebra<<Self as AfAlgebra<T>>::Scalar, i16>
+    + crate::algebras::compare::CompareAlgebra<<Self as AfAlgebra<T>>::Value>
+    + crate::algebras::compare::CompareAlgebra<<Self as AfAlgebra<T>>::Scalar>
+    + crate::algebras::array_compare::ArrayCompareAlgebra<<Self as AfAlgebra<T>>::Value>
 where
     T: Float,
 {
@@ -49,20 +49,20 @@ impl<T: Float> AfAlgebra<T> for Check {
 }
 
 impl<T: Float> AfAlgebra<T> for Graph1 {
-    type Scalar = graph::Value<T>;
-    type Value = graph::Value<af::Array<T>>;
+    type Scalar = Value<T>;
+    type Value = Value<af::Array<T>>;
     type GradientReader = store::GenericGradientMap1;
 }
 
 impl<T: Float> AfAlgebra<T> for GraphN {
-    type Scalar = graph::Value<T>;
-    type Value = graph::Value<af::Array<T>>;
+    type Scalar = Value<T>;
+    type Value = Value<af::Array<T>>;
     type GradientReader = store::GenericGradientMapN;
 }
 
 /// All supported float types.
 pub trait Float:
-    crate::Number
+    crate::number::Number
     + Default
     + PartialOrd
     + num::Float
@@ -113,7 +113,7 @@ impl FullAlgebra for GraphN {
 /// Convenient functions used for testing.
 pub mod testing {
     use super::*;
-    use crate::array::ArrayAlgebra;
+    use crate::algebras::array::ArrayAlgebra;
 
     /// Estimate gradient along the given direction.
     #[allow(clippy::suspicious_operation_groupings)]

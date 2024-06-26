@@ -1,11 +1,15 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::config::{Config1, ConfigN};
 use crate::{
+    check::Check,
     error::{Error, Result},
-    graph::{Config1, ConfigN, Graph, Value},
+    eval::Eval,
+    graph::Graph,
+    number::Number,
     store::GradientStore,
-    Check, Eval, Number,
+    value::Value,
 };
 
 /// Core trait for data operations that support differentiation of values.
@@ -44,7 +48,7 @@ pub trait HasDims {
     fn dims(&self) -> Self::Dims;
 }
 
-impl<A> HasDims for crate::graph::Value<A>
+impl<A> HasDims for crate::value::Value<A>
 where
     A: HasDims,
 {

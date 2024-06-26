@@ -1,12 +1,14 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::config::{Config1, ConfigN};
 use crate::{
-    core::{CoreAlgebra, HasDims},
+    algebras::core::{CoreAlgebra, HasDims},
+    algebras::linked::LinkedAlgebra,
     error::Result,
-    graph::{Config1, ConfigN, Graph, Value},
-    linked::LinkedAlgebra,
+    graph::Graph,
     store::GradientStore,
+    value::Value,
 };
 
 /// Whether a matrix should be transposed and/or conjugated before applying a matrix operation.
@@ -34,7 +36,7 @@ pub trait MatrixAlgebra<Value> {
 #[cfg(feature = "arrayfire")]
 mod af_arith {
     use super::*;
-    use crate::{arrayfire::Float, error::Error, Check, Eval};
+    use crate::{algebras::arrayfire::Float, check::Check, error::Error, Eval};
     use arrayfire as af;
 
     impl<T> MatrixAlgebra<af::Array<T>> for Eval

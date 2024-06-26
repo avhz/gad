@@ -1,13 +1,17 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::config::{Config1, ConfigN};
 use crate::{
-    core::{CoreAlgebra, HasDims},
+    algebras::core::{CoreAlgebra, HasDims},
+    algebras::linked::LinkedAlgebra,
+    check::Check,
     error::Result,
-    graph::{Config1, ConfigN, Graph, Value},
-    linked::LinkedAlgebra,
+    eval::Eval,
+    graph::Graph,
+    number::Number,
     store::GradientStore,
-    Check, Eval, Number,
+    value::Value,
 };
 
 /// Element-wise arithmetic operations.

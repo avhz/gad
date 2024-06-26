@@ -1,12 +1,14 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::config::{Config1, ConfigN};
 use crate::{
-    core::{CoreAlgebra, HasDims},
+    algebras::core::{CoreAlgebra, HasDims},
+    algebras::linked::LinkedAlgebra,
     error::Result,
-    graph::{Config1, ConfigN, Graph, Value},
-    linked::LinkedAlgebra,
+    graph::Graph,
     store::GradientStore,
+    value::Value,
 };
 
 /// Array operations.
@@ -47,8 +49,8 @@ pub trait ArrayAlgebra<Value> {
 #[cfg(feature = "arrayfire")]
 mod af_arith {
     use crate::{
-        array::ArrayAlgebra,
-        arrayfire::Float,
+        algebras::array::ArrayAlgebra,
+        algebras::arrayfire::Float,
         error::{check_equal_dimensions, Error, Result},
         Check, Eval,
     };
@@ -206,7 +208,7 @@ macro_rules! impl_graph {
                 + ArrayAlgebra<D, Scalar = T, Dims = Dims>,
             Dims: PartialEq + Clone + Copy + std::fmt::Debug + Default + 'static + Send + Sync,
             D: HasDims<Dims = Dims> + Clone + 'static + Send + Sync,
-            T: crate::Number,
+            T: crate::number::Number,
         {
             type Dims = Dims;
             type Scalar = Value<T>;

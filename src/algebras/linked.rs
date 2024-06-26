@@ -1,7 +1,9 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::graph::{Config, Graph, Value};
+use crate::config::Config;
+use crate::graph::Graph;
+use crate::value::Value;
 
 /// How to reference values from another algebra.
 /// This is needed for higher-order differentials in order to propagate
@@ -13,7 +15,7 @@ pub trait LinkedAlgebra<SourceValue, TargetValue> {
 /// Ignore the link when evaluating pure arrays.
 impl<D, A> LinkedAlgebra<Value<D>, D> for A
 where
-    A: crate::core::CoreAlgebra<D, Value = D>,
+    A: crate::algebras::core::CoreAlgebra<D, Value = D>,
 {
     #[inline]
     fn link<'a>(&mut self, value: &'a Value<D>) -> &'a D {

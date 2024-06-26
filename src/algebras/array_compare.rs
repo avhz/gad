@@ -1,15 +1,18 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::config::{Config1, ConfigN};
 use crate::{
-    arith::ArithAlgebra,
-    array::ArrayAlgebra,
-    compare::CompareAlgebra,
-    core::{CoreAlgebra, HasDims},
+    algebras::arithmetic::ArithAlgebra,
+    algebras::array::ArrayAlgebra,
+    algebras::compare::CompareAlgebra,
+    algebras::core::{CoreAlgebra, HasDims},
+    algebras::linked::LinkedAlgebra,
+    check::Check,
     error::Result,
-    graph::{Config1, ConfigN, Graph, Value},
-    linked::LinkedAlgebra,
+    graph::Graph,
     store::GradientStore,
+    value::Value,
 };
 
 /// Array-oriented comparison operations.
@@ -24,13 +27,13 @@ pub trait ArrayCompareAlgebra<Value>: CompareAlgebra<Value> + ArrayAlgebra<Value
 #[cfg(feature = "arrayfire")]
 mod af_arith {
     use super::*;
-    use crate::{analytic::AnalyticAlgebra, error, Check, Eval};
+    use crate::{algebras::analytic::AnalyticAlgebra, error, Check, Eval};
     use arrayfire as af;
 
     impl<T> ArrayCompareAlgebra<af::Array<T>> for Eval
     where
         Self: CoreAlgebra<af::Array<T>, Value = af::Array<T>> + AnalyticAlgebra<af::Array<T>>,
-        T: crate::arrayfire::Float
+        T: crate::algebras::arrayfire::Float
             + af::ImplicitPromote<T, Output = T>
             + af::ConstGenerator<OutType = T>
             + num::Zero,
@@ -116,7 +119,7 @@ macro_rules! impl_graph {
                 + ArrayAlgebra<D, Scalar = T, Dims = Dims>
                 + LinkedAlgebra<Value<D>, D>
                 + LinkedAlgebra<Value<T>, T>,
-            T: crate::Number,
+            T: crate::number::Number,
             D: HasDims<Dims = Dims> + Clone + 'static + Send + Sync,
             Dims: PartialEq + std::fmt::Debug + Default + Copy + Clone + 'static + Send + Sync,
         {

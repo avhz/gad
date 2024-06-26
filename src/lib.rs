@@ -438,35 +438,47 @@
 //! }
 //! ```
 
+use eval::Eval;
+
 /// Convenient prelude.
 /// For testing and external use only.
 pub mod prelude {
     pub use crate::{
-        analytic::AnalyticAlgebra,
-        arith::ArithAlgebra,
-        array::ArrayAlgebra,
-        array_compare::ArrayCompareAlgebra,
-        compare::CompareAlgebra,
-        const_arith::ConstArithAlgebra,
-        core::{CoreAlgebra, HasDims},
+        algebras::{
+            analytic::AnalyticAlgebra,
+            arithmetic::ArithAlgebra,
+            array::ArrayAlgebra,
+            array_compare::ArrayCompareAlgebra,
+            compare::CompareAlgebra,
+            const_arith::ConstArithAlgebra,
+            core::{CoreAlgebra, HasDims},
+            linked::LinkedAlgebra,
+            matrix::{MatProp, MatrixAlgebra},
+        },
+        check::Check,
+        config::{Config, Config1, ConfigN},
         error::{check_equal_dimensions, Error, Result},
+        eval::Eval,
         func_name,
-        graph::{Config1, ConfigN, Graph, Value},
-        linked::LinkedAlgebra,
-        matrix::{MatProp, MatrixAlgebra},
+        graph::Graph,
         net::{
             CheckNet as _, ConstantData, EvalNet as _, HasGradientId, HasGradientReader, InputData,
             Net, WeightData, WeightOps,
         },
         net_ext::{DiffNet as _, SingleOutputNet as _},
+        number::Number,
         store::{GradientId, GradientReader, GradientStore},
-        Check, Eval, Graph1, GraphN, Number,
+        value::Value,
+        Graph1, GraphN,
     };
-    pub use thiserror::Error as _;
+    // pub use thiserror::Error as _;
 
     #[cfg(feature = "arrayfire")]
-    pub use crate::arrayfire::{testing, AfAlgebra, Float, FullAlgebra};
+    pub use crate::algebras::arrayfire::{testing, AfAlgebra, Float, FullAlgebra};
 }
+
+/// Config trait.
+pub mod config;
 
 /// Error and result types.
 #[macro_use]
@@ -475,35 +487,41 @@ pub mod error;
 /// Provide algebras supporting higher-order, tape-based auto-differentiation.
 pub mod graph;
 
-/// Core operations.
-pub mod core;
+pub mod algebras {
+    /// Core operations.
+    pub mod core;
 
-/// Pointwise analytic functions (cos, sin, log, exp, pow, sqrt, ..)
-pub mod analytic;
+    /// Pointwise analytic functions (cos, sin, log, exp, pow, sqrt, ..)
+    pub mod analytic;
 
-/// Pointwise arithmetic operations.
-pub mod arith;
+    /// Pointwise arithmetic operations.
+    pub mod arithmetic;
 
-/// Pointwise arithmetic operations with a constant value.
-pub mod const_arith;
+    /// Pointwise arithmetic operations with a constant value.
+    pub mod const_arith;
 
-/// Pointwise comparison operations.
-pub mod compare;
+    /// Pointwise comparison operations.
+    pub mod compare;
 
-/// Operation to propagate gradients in the case of high-order differentials.
-pub mod linked;
+    /// Operation to propagate gradients in the case of high-order differentials.
+    pub mod linked;
+
+    /// Array operations.
+    pub mod array;
+
+    /// Array operations with comparisons.
+    pub mod array_compare;
+
+    /// Operations on matrix.
+    pub mod matrix;
+
+    /// Additional definitions for Arrayfire.
+    #[cfg(feature = "arrayfire")]
+    pub mod arrayfire;
+}
 
 /// Gradient storage for the `graph` module.
 pub mod store;
-
-/// Array operations.
-pub mod array;
-
-/// Array operations with comparisons.
-pub mod array_compare;
-
-/// Operations on matrix.
-pub mod matrix;
 
 /// Neural networks.
 pub mod net;
@@ -511,76 +529,29 @@ pub mod net;
 /// Network extensions.
 pub mod net_ext;
 
-/// Additional definitions for Arrayfire.
-#[cfg(feature = "arrayfire")]
-pub mod arrayfire;
+/// Node.
+pub mod node;
 
-/// The default algebra that only checks dimensions.
-#[derive(Clone, Default)]
-pub struct Check;
+/// Value.
+pub mod value;
 
-/// The default algebra that only computes forward values.
-#[derive(Clone, Default)]
-pub struct Eval {
-    check: Check,
-}
+/// Reserved trait.
+pub mod reserved;
+
+/// Number trait.
+pub mod number;
+
+/// Check.
+pub mod check;
+
+/// Eval.
+pub mod eval;
 
 /// The default algebra that allows computing first-order differentials (aka gradients).
-pub type Graph1 = graph::Graph<graph::Config1<Eval>>;
+pub type Graph1 = graph::Graph<config::Config1<Eval>>;
 
 /// The default algebra that allows computing higher-order differentials.
-pub type GraphN = graph::Graph<graph::ConfigN<Eval>>;
-
-impl Eval {
-    /// Access the underlying default "Check" algebra.
-    #[inline]
-    pub fn check(&mut self) -> &mut Check {
-        &mut self.check
-    }
-}
-
-mod private {
-    /// "Sealed" trait used to avoid conflicting trait implementations.
-    pub trait Reserved {}
-
-    impl Reserved for i8 {}
-    impl Reserved for i16 {}
-    impl Reserved for i32 {}
-    impl Reserved for i64 {}
-    impl Reserved for f32 {}
-    impl Reserved for f64 {}
-    impl Reserved for num::complex::Complex<f32> {}
-    impl Reserved for num::complex::Complex<f64> {}
-    impl Reserved for num::Rational32 {}
-    impl Reserved for num::Rational64 {}
-}
-
-/// Supported numbers for default algebras.
-pub trait Number:
-    private::Reserved
-    + num::Num
-    + std::ops::Neg<Output = Self>
-    + std::ops::AddAssign
-    + std::fmt::Debug
-    + serde::Serialize
-    + serde::de::DeserializeOwned
-    + 'static
-    + Clone
-    + Copy
-    + Send
-    + Sync
-{
-}
-impl Number for i8 {}
-impl Number for i16 {}
-impl Number for i32 {}
-impl Number for i64 {}
-impl Number for f32 {}
-impl Number for f64 {}
-impl Number for num::complex::Complex<f32> {}
-impl Number for num::complex::Complex<f64> {}
-impl Number for num::Rational32 {}
-impl Number for num::Rational64 {}
+pub type GraphN = graph::Graph<config::ConfigN<Eval>>;
 
 #[cfg(test)]
 mod testing {

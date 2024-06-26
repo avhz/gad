@@ -1,7 +1,7 @@
 // Copyright (c) Facebook, Inc. and its affiliates
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{core::CoreAlgebra, error::Result, graph::Value};
+use crate::{algebras::core::CoreAlgebra, error::Result, value::Value};
 use std::collections::BTreeMap;
 
 #[cfg(doc)]
@@ -57,18 +57,18 @@ pub trait GradientStore<Id, T>: GradientReader<Id, T> {
 
 /// Gradient store used by [`Graph1`].
 /// Indices of type `GradientId<T>` are mapped to values of type `T`.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct GenericGradientMap1 {
     values: BTreeMap<Id, Box<dyn std::any::Any>>,
 }
 
-impl Default for GenericGradientMap1 {
-    fn default() -> Self {
-        Self {
-            values: BTreeMap::new(),
-        }
-    }
-}
+// impl Default for GenericGradientMap1 {
+//     fn default() -> Self {
+//         Self {
+//             values: BTreeMap::new(),
+//         }
+//     }
+// }
 
 impl<T: 'static> GradientReader<GradientId<T>, T> for GenericGradientMap1 {
     fn read(&self, id: GradientId<T>) -> Option<&T> {
@@ -94,18 +94,18 @@ impl<T: 'static> GradientStore<GradientId<T>, T> for GenericGradientMap1 {
 
 /// Gradient store used by [`GraphN`].
 /// Indices of type `GradientId<T>` are mapped to values of type `Value<T>`.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct GenericGradientMapN {
     values: BTreeMap<Id, Box<dyn std::any::Any>>,
 }
 
-impl Default for GenericGradientMapN {
-    fn default() -> Self {
-        Self {
-            values: BTreeMap::new(),
-        }
-    }
-}
+// impl Default for GenericGradientMapN {
+//     fn default() -> Self {
+//         Self {
+//             values: BTreeMap::new(),
+//         }
+//     }
+// }
 
 impl<T: 'static> GradientReader<GradientId<T>, Value<T>> for GenericGradientMapN {
     fn read(&self, id: GradientId<T>) -> Option<&Value<T>> {
@@ -210,8 +210,7 @@ impl Id {
     pub(crate) fn next_id(&self) -> Self {
         Self {
             arena_id: self.arena_id,
-            index: std::num::NonZeroU32::new((self.index.get() + 1) as u32)
-                .expect("Too many nodes"),
+            index: std::num::NonZeroU32::new(self.index.get() + 1).expect("Too many nodes"),
         }
     }
 }
